@@ -13,7 +13,7 @@
       "-Wunreachable-code",
       "-Wold-style-cast",
       "-Wno-error=unused-variable",
-      "-fno-exceptions"
+      "-fno-exceptions",
     ],
     "source_files": [ "<!@(find addon/src -name *.cpp)" ],
     "dependencies_include_dirs": [ "<!@(./scripts/deps.sh --emit-include-dirs)" ],

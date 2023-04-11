@@ -1,5 +1,9 @@
 [project]
 name = "@nodepp/example"
 
+[repositories]
+expressots = { git = "https://github.com/expressots/expressots-xmake-repo" }
+
 [dependencies]
-fmt = "9.1.0"
+fmt = "latest"
+scylladb = "latest"
