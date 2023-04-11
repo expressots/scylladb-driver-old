@@ -1,0 +1,8 @@
+build/
+compile_commands.json
+*.lock
+.cache/
+
+/node_modules/*
+/node_modules/@nodepp/example/binding.node
+!/node_modules/@nodepp/*

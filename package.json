@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json.schemastore.org/package",
+  "name": "@nodepp/example",
+  "version": "1.0.0",
+  "author": {
+    "name": "Daniel Boll",
+    "email": "danielboll.dev@proton.me",
+    "url": "https://github.com/Daniel-Boll"
+  },
+  "homepage": "https://github.com/Daniel-Boll/node++-boilerplate",
+  "license": "MIT",
+  "scripts": {
+    "start": "tsnd --respawn src/index.ts",
+    "run:only": "tsnd src/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "gen:lib": "node-gyp configure && node-gyp build",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "node-addon-api": "^6.0.0",
+    "node-gyp": "^9.3.1",
+    "ts-node-dev": "^2.0.0",
+    "@nodepp/example": "file:./node_modules/@nodepp/example"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.3"
+  }
+}

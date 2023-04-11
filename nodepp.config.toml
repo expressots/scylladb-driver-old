@@ -1,0 +1,5 @@
+[project]
+name = "@nodepp/example"
+
+[dependencies]
+fmt = "9.1.0"

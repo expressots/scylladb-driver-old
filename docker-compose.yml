@@ -1,0 +1,8 @@
+version: '3'
+
+services:
+  nodepp-example:
+    build: .
+    volumes:
+      - .:/home/nodepp
+    command: bash -c "yarn run:only"
