@@ -2,7 +2,7 @@
 
 #include <napi.h>
 
-namespace playground {
+namespace nodepp {
   class PromiseWorker : public Napi::AsyncWorker {
   public:
     PromiseWorker(Napi::Promise::Deferred const &d, const char *resource_name)

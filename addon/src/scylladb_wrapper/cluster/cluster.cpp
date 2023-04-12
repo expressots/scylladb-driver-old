@@ -1,8 +1,9 @@
 #include <fmt/core.h>
 
-#include <scylladb_wrapper/cluster.hpp>
+#include <scylladb_wrapper/cluster/cluster.hpp>
+#include <scylladb_wrapper/cluster/session.hpp>
 
-namespace scylladb_wrapper {
+namespace scylladb_wrapper::cluster {
   CassCluster *create_cluster(const char *hosts) {
     CassCluster *cluster = cass_cluster_new();
     cass_cluster_set_contact_points(cluster, hosts);
@@ -114,7 +115,7 @@ namespace scylladb_wrapper {
 
   Napi::Function Cluster::GetClass(Napi::Env env) {
     auto methods = {
-        InstanceMethod("connect", &Cluster::Connect),
+        InstanceMethod("connect", &Cluster::connect),
     };
     Napi::Function func = DefineClass(env, "Cluster", methods);
 
@@ -126,52 +127,108 @@ namespace scylladb_wrapper {
     Napi::HandleScope scope(env);
 
     int length = info.Length();
-    if (length != 1 || !info[0].IsString()) {
-      Napi::TypeError::New(env, "String expected").ThrowAsJavaScriptException();
+    if (length > 1) {
+      Napi::TypeError::New(env, "Expected at most 1 argument").ThrowAsJavaScriptException();
+      return;
     }
 
-    this->host = info[0].As<Napi::String>().Utf8Value();
+    // If the user provided an object parameter we fill the options with the provided values
+    if (length == 1) {
+      if (!info[0].IsObject()) {
+        Napi::TypeError::New(env, "Expected an object as parameter").ThrowAsJavaScriptException();
+        return;
+      }
+
+      Napi::Object options = info[0].As<Napi::Object>();
+
+      if (options.Has("nodes")) {
+        Napi::Value nodes = options.Get("nodes");
+        if (!nodes.IsArray()) {
+          Napi::TypeError::New(env, "Expected an array of nodes").ThrowAsJavaScriptException();
+          return;
+        }
+
+        Napi::Array nodesArray = nodes.As<Napi::Array>();
+        for (uint32_t i = 0; i < nodesArray.Length(); i++) {
+          Napi::Value node = nodesArray.Get(i);
+          if (!node.IsString()) {
+            Napi::TypeError::New(env, "Expected an array of strings").ThrowAsJavaScriptException();
+            return;
+          }
+
+          this->nodes.push_back(
+              node.As<Napi::String>().Utf8Value());  // FIXME: Only used the first node 🤷
+        }
+      } else {
+        this->nodes.push_back("127.0.0.1");
+      }
+
+      if (options.Has("port")) {
+        Napi::Value port = options.Get("port");
+        if (!port.IsNumber() && !port.IsString()) {
+          Napi::TypeError::New(env, "Expected a number or string for port")
+              .ThrowAsJavaScriptException();
+          return;
+        }
+
+        this->port = port.As<Napi::String>().Utf8Value();
+      } else {
+        this->port = "9042";
+      }
+
+      if (options.Has("sslContext")) {
+        Napi::Value sslContext = options.Get("sslContext");
+        if (!sslContext.IsString()) {
+          Napi::TypeError::New(env, "Expected a string for sslContext")
+              .ThrowAsJavaScriptException();
+          return;
+        }
+
+        this->ssl_context = sslContext.As<Napi::String>().Utf8Value();
+      } else {
+        this->ssl_context = "";  // FIXME: UNUSED
+      }
+
+      if (options.Has("username")) {
+        Napi::Value username = options.Get("username");
+        if (!username.IsString()) {
+          Napi::TypeError::New(env, "Expected a string for username").ThrowAsJavaScriptException();
+          return;
+        }
+
+        this->username = username.As<Napi::String>().Utf8Value();
+      } else {
+        this->username = "";  // FIXME: UNUSED
+      }
+
+      if (options.Has("password")) {
+        Napi::Value password = options.Get("password");
+        if (!password.IsString()) {
+          Napi::TypeError::New(env, "Expected a string for password").ThrowAsJavaScriptException();
+          return;
+        }
+
+        this->password = password.As<Napi::String>().Utf8Value();
+      } else {
+        this->password = "";  // FIXME: UNUSED
+      }
+    }
   }
 
-  Napi::Value Cluster::Connect(const Napi::CallbackInfo &info) {
+  Napi::Value Cluster::connect(const Napi::CallbackInfo &info) {
     Napi::Env env = info.Env();
     CassCluster *cluster = NULL;
-    auto session = cass_session_new();
+    CassSession *session = cass_session_new();
 
-    cluster = create_cluster(this->host.c_str());
+    cluster = create_cluster(this->nodes[0].c_str());
 
     if (connect_session(session, cluster) != CASS_OK) {
       cass_cluster_free(cluster);
       cass_session_free(session);
-
-      return Napi::String::New(env, fmt::format("Unable to connect to cluster: {}", this->host));
+      Napi::Error::New(env, "Unable to connect").ThrowAsJavaScriptException();
+      return env.Null();
     }
 
-    /* Build statement and execute query */
-    const char *query = "SELECT release_version FROM system.local";
-    CassStatement *statement = cass_statement_new(query, 0);
-
-    CassFuture *result_future = cass_session_execute(session, statement);
-    if (cass_future_error_code(result_future) == CASS_OK) {
-      /* Retrieve result set and get the first row */
-      const CassResult *result = cass_future_get_result(result_future);
-      const CassRow *row = cass_result_first_row(result);
-
-      if (row) {
-        const CassValue *value = cass_row_get_column_by_name(row, "release_version");
-
-        const char *release_version;
-        size_t release_version_length;
-        cass_value_get_string(value, &release_version, &release_version_length);
-        return Napi::String::New(env, fmt::format("Release version: {}", release_version));
-      }
-
-      cass_result_free(result);
-    }
-
-    cass_session_free(session);
-    cass_cluster_free(cluster);
-
-    return Napi::String::New(env, fmt::format("Connected to cluster: {}", this->host));
+    return env.Null();
   }
-}  // namespace scylladb_wrapper
+}  // namespace scylladb_wrapper::cluster

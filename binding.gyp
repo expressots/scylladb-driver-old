@@ -13,7 +13,7 @@
       "-Wunreachable-code",
       "-Wold-style-cast",
       "-Wno-error=unused-variable",
-      "-fno-exceptions",
+      "-fno-exceptions"
     ],
     "source_files": [ "<!@(find addon/src -name *.cpp)" ],
     "dependencies_include_dirs": [ "<!@(./scripts/deps.sh --emit-include-dirs)" ],
@@ -21,7 +21,7 @@
   "targets": [
     {
       "target_name": "binding",
-      "cflags_cc!": [ "<@(compiler_checks)" ],
+      "cflags_cc!": [ "<@(compiler_checks)", "-std=c++17" ],
       "sources": [ "<@(source_files)" ],
       "include_dirs": [
         "<!@(node -p \"require('node-addon-api').include\")",
@@ -29,7 +29,14 @@
         "<@(dependencies_include_dirs)",
         "/usr/local/include/"
       ],
-      "libraries": [ "<!@(./scripts/deps.sh --emit-libraries)" ]
+      "libraries": [ "<!@(./scripts/deps.sh --emit-libraries)" ],
+      "conditions": [
+        ['OS!="win"', {
+          'cflags_cc+': [
+            '-std=c++17'
+          ]
+        }]
+      ]
     }
   ]
 }

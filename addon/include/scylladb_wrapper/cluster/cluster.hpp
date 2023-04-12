@@ -2,8 +2,9 @@
 
 #include <napi.h>
 #include <scylladb/cassandra.h>
+#include <vector>
 
-namespace scylladb_wrapper {
+namespace scylladb_wrapper::cluster {
 
   struct Basic_ {
     cass_bool_t bln;
@@ -23,12 +24,16 @@ namespace scylladb_wrapper {
 
   class Cluster : public Napi::ObjectWrap<Cluster> {
   private:
-    std::string host;
+    std::vector<std::string> nodes;
+    std::string port;
+    std::string ssl_context;
+    std::string username;
+    std::string password;
 
   public:
     static Napi::Function GetClass(Napi::Env env);
     Cluster(const Napi::CallbackInfo &info);
 
-    Napi::Value Connect(const Napi::CallbackInfo &info);
+    Napi::Value connect(const Napi::CallbackInfo &info);
   };
 }  // namespace scylladb_wrapper
