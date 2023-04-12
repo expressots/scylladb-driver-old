@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # current file directory
-CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+CURRENT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 
 # shellcheck source=./utils/log.sh
 source "$CURRENT_DIR/utils/log.sh" # log_error, log_success, log_info
@@ -11,6 +11,8 @@ source "$CURRENT_DIR/utils/misc.sh" # command_exists
 source "$CURRENT_DIR/utils/xmake.sh" # check_if_repositories_exists_and_add, check_if_dependencies_exists_and_install
 # shellcheck source=./utils/constants.sh
 source "$CURRENT_DIR/utils/constants.sh" # DEPENDENCIES REPOSITORIES CONFIG_FILE
+# shellcheck source=./utils/patch_shared_libraries.sh
+source "$CURRENT_DIR/utils/patch_shared_libraries.sh" # patch_shared_libraries
 
 usage() {
 	echo "Usage: $0 [options]"
@@ -80,23 +82,25 @@ fi
 if [ "$BUILD" = true ]; then
 	log_info "Building the addon"
 
-  check_if_repositories_exists_and_add "$REPOSITORIES" "$CONFIG_FILE"
-  check_if_dependencies_exists_and_install "$DEPENDENCIES"
+	check_if_repositories_exists_and_add "$REPOSITORIES" "$CONFIG_FILE"
+	check_if_dependencies_exists_and_install "$DEPENDENCIES"
 
 	if ! $PACKAGE_MANAGER run gen:lib &>/dev/null; then
 		log_error "Failed to build the addon"
 		exit 1
 	fi
 
-  log_success "Addon built"
+	log_success "Addon built"
 
 	if ! command_exists "stoml"; then
-    log_error "Please install stoml: https://github.com/freshautomations/stoml"
+		log_error "Please install stoml: https://github.com/freshautomations/stoml"
 		exit 1
 	fi
 
-  mkdir -p "./node_modules/$(stoml nodepp.config.toml project.name)"
-  cp ./build/Release/binding.node "./node_modules/$(stoml nodepp.config.toml project.name)/"
+	mkdir -p "./node_modules/$(stoml nodepp.config.toml project.name)"
+	cp ./build/Release/binding.node "./node_modules/$(stoml nodepp.config.toml project.name)/"
+
+	patch_shared_libraries "./node_modules/$(stoml nodepp.config.toml project.name)/binding.node"
 fi
 
 if [ "$LSP" = true ]; then
@@ -105,4 +109,9 @@ if [ "$LSP" = true ]; then
 	rm -rf ./compile_commands.json
 	bear -- make -j8 -Cbuild -B &>/dev/null
 	log_success "compile_commands generated"
+fi
+
+if [ "$BUILD_RELEASE" = true ]; then
+	# TODO: On build release we should move the necessary files into the equivalent npm structure
+	log_error "Not implemented yet"
 fi

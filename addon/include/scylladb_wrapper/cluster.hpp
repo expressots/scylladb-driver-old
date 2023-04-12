@@ -1,7 +1,7 @@
 #pragma once
 
-#include <cassandra.h>
 #include <napi.h>
+#include <scylladb/cassandra.h>
 
 namespace scylladb_wrapper {
 
