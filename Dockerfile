@@ -2,7 +2,7 @@ FROM archlinux:base
 
 # Install OS dependencies
 RUN pacman -Syu --noconfirm --needed \
-  clang xmake git make cmake ninja unzip zsh \ 
+  clang xmake git make cmake ninja unzip zsh patchelf \ 
   nodejs yarn python \ 
   bear go
 
@@ -14,6 +14,9 @@ USER nodepp
 
 # Copy the project files
 COPY --chown=nodepp:nodepp . /home/nodepp/nodepp
+
+# make go dir
+RUN mkdir /home/nodepp/go
 
 # Install go to get stomlGO111MODULE=on go install github.com/freshautomations/stoml@latest
 ENV GOPATH="/home/nodepp/go"

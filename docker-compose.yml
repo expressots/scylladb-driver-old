@@ -4,7 +4,7 @@ services:
   nodepp-example:
     build: .
     volumes:
-      - .:/home/nodepp
+      - .:/home/nodepp/nodepp
     # command: bash -c "yarn run:only"
     command: bash -c "LD_LIBRARY_PATH=~/.xmake/packages/s/scylladb/2.16.2b/304ccf82d53742fbaf0040cab4330549/lib yarn run:only"
 
