@@ -8,11 +8,11 @@ namespace scylladb_wrapper::cluster {
 
   class Session {
   private:
-    CassSession* session = nullptr;
+    CassSession* session;
 
   public:
-    static Napi::Object GetClass(const Napi::CallbackInfo& info);
-    Session(CassSession* session);
+    Napi::Object GetClass(const Napi::CallbackInfo& info);
+    Session(CassSession* session) : session(session) {}
 
     Napi::Value execute_sync(const Napi::CallbackInfo& info);
 

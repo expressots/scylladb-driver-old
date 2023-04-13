@@ -217,18 +217,19 @@ namespace scylladb_wrapper::cluster {
 
   Napi::Value Cluster::connect(const Napi::CallbackInfo &info) {
     Napi::Env env = info.Env();
-    CassCluster *cluster = NULL;
-    CassSession *session = cass_session_new();
 
-    cluster = create_cluster(this->nodes[0].c_str());
+    this->session = cass_session_new();
+    this->cluster = create_cluster(this->nodes[0].c_str());
 
-    if (connect_session(session, cluster) != CASS_OK) {
+    if (connect_session(this->session, this->cluster) != CASS_OK) {
+      fmt::print("Unable to connect\n");
       cass_cluster_free(cluster);
       cass_session_free(session);
       Napi::Error::New(env, "Unable to connect").ThrowAsJavaScriptException();
       return env.Null();
     }
 
-    return env.Null();
+    Session sessionWrapper{this->session};
+    return sessionWrapper.GetClass(info);
   }
 }  // namespace scylladb_wrapper::cluster

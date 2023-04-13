@@ -30,6 +30,9 @@ namespace scylladb_wrapper::cluster {
     std::string username;
     std::string password;
 
+    CassCluster* cluster;
+    CassSession* session;
+
   public:
     static Napi::Function GetClass(Napi::Env env);
     Cluster(const Napi::CallbackInfo &info);

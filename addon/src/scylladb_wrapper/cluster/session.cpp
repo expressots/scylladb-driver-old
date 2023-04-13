@@ -1,6 +1,6 @@
-#include <napi.h>
-#include <scylladb/cassandra.h>
+#include <fmt/core.h>
 
+#include <nodepp/object-member-function.hpp>
 #include <scylladb_wrapper/cluster/session.hpp>
 
 namespace scylladb_wrapper::cluster {
@@ -10,12 +10,10 @@ namespace scylladb_wrapper::cluster {
     Napi::Object session_object = Napi::Object::New(env);
 
     session_object.Set(Napi::String::New(env, "executeSync"),
-                       Napi::Function::New(env, &Session::execute_sync));
+                       NodePP::MemberFunction(env, this, &Session::execute_sync));
 
     return session_object;
   }
-
-  Session::Session(CassSession* session) : session(session) {}
 
   Napi::Value Session::execute_sync(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();
@@ -32,30 +30,36 @@ namespace scylladb_wrapper::cluster {
     std::string query = info[0].As<Napi::String>().Utf8Value();
 
     CassStatement* statement = cass_statement_new(query.c_str(), 0);
+    cass_statement_free(statement);
     CassFuture* result_future = cass_session_execute(this->session, statement);
 
-    if (cass_future_error_code(result_future) == CASS_OK) {
+    cass_future_wait(result_future);
+
+    auto result_code = cass_future_error_code(result_future);
+
+    if (result_code == CASS_OK) {
       /* Retrieve result set and get the first row */
       const CassResult* result = cass_future_get_result(result_future);
       auto results = scylladb_wrapper::cluster::get_string_values_from_result(result);
-
-      cass_result_free(result);
-      cass_statement_free(statement);
-      cass_future_free(result_future);
 
       // Return the array of strings to the user
       auto array = Napi::Array::New(env, results.size());
       for (size_t i = 0; i < results.size(); i++) {
         array.Set(i, results[i]);
       }
+
+      cass_result_free(result);
+      cass_future_free(result_future);
       return array;
     } else {
       const char* message;
       size_t message_length;
       cass_future_error_message(result_future, &message, &message_length);
-      cass_statement_free(statement);
+
+      fmt::print("Error: {}\n", message);
+      fmt::print("Error code: {}\n", cass_error_desc(result_code));
+
       cass_future_free(result_future);
-      Napi::Error::New(env, message).ThrowAsJavaScriptException();
       return env.Null();
     }
   }
