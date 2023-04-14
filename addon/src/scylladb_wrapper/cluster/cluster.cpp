@@ -1,5 +1,6 @@
 #include <fmt/core.h>
 
+#include <optional>
 #include <scylladb_wrapper/cluster/cluster.hpp>
 #include <scylladb_wrapper/cluster/session.hpp>
 
@@ -10,9 +11,14 @@ namespace scylladb_wrapper::cluster {
     return cluster;
   }
 
-  CassError connect_session(CassSession *session, const CassCluster *cluster) {
+  CassError connect_session(CassSession *session, const CassCluster *cluster,
+                            std::string *keyspace) {
     CassError rc = CASS_OK;
-    CassFuture *future = cass_session_connect(session, cluster);
+    CassFuture *future = nullptr;
+    if (keyspace != nullptr)
+      future = cass_session_connect_keyspace(session, cluster, keyspace->c_str());
+    else
+      future = cass_session_connect(session, cluster);
 
     cass_future_wait(future);
     rc = cass_future_error_code(future);
@@ -230,7 +236,18 @@ namespace scylladb_wrapper::cluster {
     this->session = cass_session_new();
     this->cluster = create_cluster(this->nodes[0].c_str());
 
-    if (connect_session(this->session, this->cluster) != CASS_OK) {
+    // Optional keyspace string parameter
+    std::string *keyspace = nullptr;
+    if (info.Length() == 1) {
+      if (!info[0].IsString()) {
+        Napi::TypeError::New(env, "Expected a string for keyspace").ThrowAsJavaScriptException();
+        return env.Null();
+      }
+
+      keyspace = new std::string(info[0].As<Napi::String>().Utf8Value());
+    }
+
+    if (connect_session(this->session, this->cluster, keyspace) != CASS_OK) {
       fmt::print("Unable to connect\n");
       cass_cluster_free(cluster);
       cass_session_free(session);
