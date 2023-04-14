@@ -1,12 +1,16 @@
 {
   "$schema": "https://json.schemastore.org/package",
-  "name": "@nodepp/example",
+  "name": "scylladb-driver",
   "version": "1.0.0",
   "author": {
-    "name": "Daniel Boll",
-    "email": "danielboll.dev@proton.me",
-    "url": "https://github.com/Daniel-Boll"
+    "name": "ExpressoTS",
+    "url": "https://expresso-ts.com/"
   },
+  "contributors": [
+    "Daniel Boll <danielboll.dev@proton.me>",
+    "Vitor Caminha <vitorcaminha@gmail.com>",
+    "Felipe Fontana <felipefontanaf@gmail.com>"
+  ],
   "homepage": "https://github.com/Daniel-Boll/node++-boilerplate",
   "license": "MIT",
   "scripts": {
