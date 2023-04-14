@@ -3,7 +3,7 @@
 #include <scylladb_wrapper/cluster/cluster.hpp>
 
 Napi::Object Init(Napi::Env env, Napi::Object exports) {
-  exports.Set(Napi::String::New(env, "Cluster"), scylladb_wrapper::cluster::Cluster::GetClass(env));
+  exports.Set("Cluster", scylladb_wrapper::cluster::Cluster::GetClass(env));
   return exports;
 }
 
