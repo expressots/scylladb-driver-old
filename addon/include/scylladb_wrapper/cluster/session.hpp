@@ -4,7 +4,7 @@
 #include <scylladb/cassandra.h>
 
 namespace scylladb_wrapper::cluster {
-  std::vector<std::string> get_string_values_from_result(const CassResult* result);
+  Napi::Value get_string_values_from_result(const Napi::CallbackInfo& info, const CassResult* result);
 
   class Session {
   private:

@@ -32,17 +32,13 @@ namespace scylladb_wrapper::cluster {
     if (result_code == CASS_OK) {
       /* Retrieve result set and get the first row */
       const CassResult* result = cass_future_get_result(result_future);
-      auto results = scylladb_wrapper::cluster::get_string_values_from_result(result);
+      auto results = scylladb_wrapper::cluster::get_string_values_from_result(info, result);
 
-      // Return the array of strings to the user
-      auto array = Napi::Array::New(env, results.size());
-      for (size_t i = 0; i < results.size(); i++) {
-        array.Set(i, results[i]);
-      }
+      Napi::Array resultsArray = results.As<Napi::Array>();
 
       cass_result_free(result);
       cass_future_free(result_future);
-      return array;
+      return resultsArray;
     } else {
       const char* message;
       size_t message_length;
@@ -62,8 +58,10 @@ namespace scylladb_wrapper::cluster {
     }
   }
 
-  std::vector<std::string> get_string_values_from_result(const CassResult* result) {
-    std::vector<std::string> values;
+  Napi::Value get_string_values_from_result(const Napi::CallbackInfo& info, const CassResult* result) {
+    Napi::Env env = info.Env();
+
+    Napi::Array valuesArray = Napi::Array::New(env);
 
     CassIterator* row_iterator = cass_iterator_from_result(result);
 
@@ -71,8 +69,14 @@ namespace scylladb_wrapper::cluster {
       const CassRow* row = cass_iterator_get_row(row_iterator);
       size_t column_count = cass_result_column_count(result);
 
+      Napi::Object column = Napi::Object::New(env);
+
       for (size_t i = 0; i < column_count; ++i) {
         const CassValue* column_value = cass_row_get_column(row, i);
+
+        const char* column_name; 
+        size_t column_name_length;
+        cass_result_column_name(result, i, &column_name, &column_name_length);
 
         // Process the column_value based on its type
         // For example, if it's a text column:
@@ -83,7 +87,7 @@ namespace scylladb_wrapper::cluster {
             const char* text;
             size_t text_length;
             cass_value_get_string(column_value, &text, &text_length);
-            values.push_back(std::string(text, text_length));
+            column.Set(Napi::String::New(env, column_name), Napi::String::New(env, std::string(text, text_length)));
             break;
           }
           case CASS_VALUE_TYPE_UUID: {
@@ -91,14 +95,20 @@ namespace scylladb_wrapper::cluster {
             cass_value_get_uuid(column_value, &uuid);
             char uuid_str[CASS_UUID_STRING_LENGTH];
             cass_uuid_string(uuid, uuid_str);
-            values.push_back(std::string(uuid_str));
+            column.Set(Napi::String::New(env, column_name), Napi::String::New(env, std::string(uuid_str)));
             break;
           }
           case CASS_VALUE_TYPE_VARCHAR: {
             const char* text;
             size_t text_length;
             cass_value_get_string(column_value, &text, &text_length);
-            values.push_back(std::string(text, text_length));
+            column.Set(Napi::String::New(env, column_name), Napi::String::New(env, std::string(text, text_length)));
+            break;
+          }
+          case CASS_VALUE_TYPE_INT: {
+            cass_int32_t value;
+            cass_value_get_int32(column_value, &value);
+            column.Set(Napi::String::New(env, column_name), Napi::Number::New(env, value));
             break;
           }
           default:
@@ -106,10 +116,12 @@ namespace scylladb_wrapper::cluster {
             break;
         }
       }
+
+      valuesArray.Set(valuesArray.Length(), column);
     }
 
     cass_iterator_free(row_iterator);
 
-    return values;
+    return valuesArray;
   }
 }  // namespace scylladb_wrapper::cluster
