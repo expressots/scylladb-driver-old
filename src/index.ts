@@ -1,11 +1,5 @@
-import { Cluster } from "@nodepp/example";
+import { run as runSimple } from "./simple";
+import { run as runCreateAndSelect } from "./create-and-select";
 
-const cluster = new Cluster({
-  nodes: ["172.21.0.2"],
-});
-
-const session = cluster.connect("system_schema");
-const keyspaceName = session.executeSync<{ table_name: string }>(
-  "SELECT table_name FROM scylla_tables"
-);
-console.log(keyspaceName);
+runSimple();
+runCreateAndSelect();

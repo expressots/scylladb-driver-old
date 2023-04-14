@@ -58,7 +58,8 @@ namespace scylladb_wrapper::cluster {
     }
   }
 
-  Napi::Value get_string_values_from_result(const Napi::CallbackInfo& info, const CassResult* result) {
+  Napi::Value get_string_values_from_result(const Napi::CallbackInfo& info,
+                                            const CassResult* result) {
     Napi::Env env = info.Env();
 
     Napi::Array valuesArray = Napi::Array::New(env);
@@ -74,7 +75,7 @@ namespace scylladb_wrapper::cluster {
       for (size_t i = 0; i < column_count; ++i) {
         const CassValue* column_value = cass_row_get_column(row, i);
 
-        const char* column_name; 
+        const char* column_name;
         size_t column_name_length;
         cass_result_column_name(result, i, &column_name, &column_name_length);
 
@@ -87,7 +88,14 @@ namespace scylladb_wrapper::cluster {
             const char* text;
             size_t text_length;
             cass_value_get_string(column_value, &text, &text_length);
-            column.Set(Napi::String::New(env, column_name), Napi::String::New(env, std::string(text, text_length)));
+            column.Set(Napi::String::New(env, column_name),
+                       Napi::String::New(env, std::string(text, text_length)));
+            break;
+          }
+          case CASS_VALUE_TYPE_BOOLEAN: {
+            cass_bool_t value;
+            cass_value_get_bool(column_value, &value);
+            column.Set(Napi::String::New(env, column_name), Napi::Boolean::New(env, value));
             break;
           }
           case CASS_VALUE_TYPE_UUID: {
@@ -95,14 +103,16 @@ namespace scylladb_wrapper::cluster {
             cass_value_get_uuid(column_value, &uuid);
             char uuid_str[CASS_UUID_STRING_LENGTH];
             cass_uuid_string(uuid, uuid_str);
-            column.Set(Napi::String::New(env, column_name), Napi::String::New(env, std::string(uuid_str)));
+            column.Set(Napi::String::New(env, column_name),
+                       Napi::String::New(env, std::string(uuid_str)));
             break;
           }
           case CASS_VALUE_TYPE_VARCHAR: {
             const char* text;
             size_t text_length;
             cass_value_get_string(column_value, &text, &text_length);
-            column.Set(Napi::String::New(env, column_name), Napi::String::New(env, std::string(text, text_length)));
+            column.Set(Napi::String::New(env, column_name),
+                       Napi::String::New(env, std::string(text, text_length)));
             break;
           }
           case CASS_VALUE_TYPE_INT: {
