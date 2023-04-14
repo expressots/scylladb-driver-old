@@ -17,5 +17,8 @@ namespace scylladb_wrapper::cluster {
     Napi::Value execute_sync(const Napi::CallbackInfo& info);
 
     ~Session();
+
+  private:
+    static void on_execute_complete(CassFuture* future, void* data);
   };
 }  // namespace scylladb_wrapper::cluster

@@ -1,6 +1,7 @@
 #include <fmt/core.h>
 
 #include <nodepp/object-member-function.hpp>
+#include <nodepp/promise-worker.hpp>
 #include <scylladb_wrapper/cluster/session.hpp>
 
 namespace scylladb_wrapper::cluster {
@@ -19,21 +20,12 @@ namespace scylladb_wrapper::cluster {
     Napi::Env env = info.Env();
     Napi::HandleScope scope(env);
 
-    // Check if the user provided a string as the first parameter
-    if (info.Length() < 1 || !info[0].IsString()) {
-      Napi::TypeError::New(env, "Expected a string as the first parameter")
-          .ThrowAsJavaScriptException();
-      return env.Null();
-    }
-
     // Get the string from the first parameter
     std::string query = info[0].As<Napi::String>().Utf8Value();
 
     CassStatement* statement = cass_statement_new(query.c_str(), 0);
-    cass_statement_free(statement);
     CassFuture* result_future = cass_session_execute(this->session, statement);
-
-    cass_future_wait(result_future);
+    cass_statement_free(statement);
 
     auto result_code = cass_future_error_code(result_future);
 
@@ -64,7 +56,11 @@ namespace scylladb_wrapper::cluster {
     }
   }
 
-  Session::~Session() { cass_session_free(this->session); }
+  Session::~Session() {
+    if (session != nullptr) {
+      cass_session_free(session);
+    }
+  }
 
   std::vector<std::string> get_string_values_from_result(const CassResult* result) {
     std::vector<std::string> values;
@@ -80,11 +76,34 @@ namespace scylladb_wrapper::cluster {
 
         // Process the column_value based on its type
         // For example, if it's a text column:
-        if (cass_value_type(column_value) == CASS_VALUE_TYPE_TEXT) {
-          const char* text;
-          size_t text_length;
-          cass_value_get_string(column_value, &text, &text_length);
-          values.emplace_back(text, text_length);
+        auto type = cass_value_type(column_value);
+
+        switch (type) {
+          case CASS_VALUE_TYPE_TEXT: {
+            const char* text;
+            size_t text_length;
+            cass_value_get_string(column_value, &text, &text_length);
+            values.push_back(std::string(text, text_length));
+            break;
+          }
+          case CASS_VALUE_TYPE_UUID: {
+            CassUuid uuid;
+            cass_value_get_uuid(column_value, &uuid);
+            char uuid_str[CASS_UUID_STRING_LENGTH];
+            cass_uuid_string(uuid, uuid_str);
+            values.push_back(std::string(uuid_str));
+            break;
+          }
+          case CASS_VALUE_TYPE_VARCHAR: {
+            const char* text;
+            size_t text_length;
+            cass_value_get_string(column_value, &text, &text_length);
+            values.push_back(std::string(text, text_length));
+            break;
+          }
+          default:
+            fmt::print("Unknown type: {}\n", type);
+            break;
         }
       }
     }

@@ -36,6 +36,7 @@ namespace scylladb_wrapper::cluster {
   public:
     static Napi::Function GetClass(Napi::Env env);
     Cluster(const Napi::CallbackInfo &info);
+    ~Cluster();
 
     Napi::Value connect(const Napi::CallbackInfo &info);
   };

@@ -122,6 +122,15 @@ namespace scylladb_wrapper::cluster {
     return func;
   }
 
+  Cluster::~Cluster() {
+    if (cluster != nullptr) {
+      cass_cluster_free(cluster);
+    }
+    if (session != nullptr) {
+      cass_session_free(session);
+    }
+  }
+
   Cluster::Cluster(const Napi::CallbackInfo &info) : Napi::ObjectWrap<Cluster>(info) {
     Napi::Env env = info.Env();
     Napi::HandleScope scope(env);
@@ -229,7 +238,7 @@ namespace scylladb_wrapper::cluster {
       return env.Null();
     }
 
-    Session sessionWrapper{this->session};
-    return sessionWrapper.GetClass(info);
+    Session *sessionWrapper = new Session(this->session);
+    return sessionWrapper->GetClass(info);
   }
 }  // namespace scylladb_wrapper::cluster
