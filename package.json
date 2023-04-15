@@ -15,18 +15,20 @@
   "license": "MIT",
   "scripts": {
     "start": "tsnd --respawn src/index.ts",
-    "run:only": "tsnd src/index.ts",
-    "build": "tsc -p tsconfig.json",
-    "gen:lib": "node-gyp configure && node-gyp rebuild",
+    "run": "tsnd src/index.ts",
+    "build": "docker compose run nodepp-example bash -c './scripts/build.sh --build'",
+    "run:docker": "docker compose run nodepp-example bash -c 'start'",
+    "gen:lib": "node-gyp rebuild",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
+    "@nodepp/example": "file:./node_modules/@nodepp/example",
     "node-addon-api": "^6.0.0",
     "node-gyp": "^9.3.1",
-    "ts-node-dev": "^2.0.0",
-    "@nodepp/example": "file:./node_modules/@nodepp/example"
+    "ts-node-dev": "^2.0.0"
   },
   "devDependencies": {
+    "@types/node": "^18.15.11",
     "typescript": "^5.0.3"
   }
 }
