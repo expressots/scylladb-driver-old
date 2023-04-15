@@ -1,7 +1,7 @@
 import { Cluster } from "@nodepp/example";
 
 const cluster = new Cluster({
-  nodes: ["127.0.0.1"],
+  nodes: [process?.env.host ?? "127.0.0.1"],
 });
 
 const session = cluster.connect();
