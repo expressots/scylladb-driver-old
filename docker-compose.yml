@@ -5,7 +5,7 @@ services:
     build: .
     volumes:
       - .:/home/nodepp/nodepp
-    command: bash -c "yarn run:only"
+    command: bash -c "yarn run:native"
 
   # Scylla db
   scylladb:
