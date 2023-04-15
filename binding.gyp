@@ -21,7 +21,7 @@
   "targets": [
     {
       "target_name": "binding",
-      "cflags_cc!": [ "<@(compiler_checks)", "-std=c++17" ],
+      "cflags_cc!": [ "<@(compiler_checks)", "-std=c++20" ],
       "sources": [ "<@(source_files)" ],
       "include_dirs": [
         "<!@(node -p \"require('node-addon-api').include\")",
@@ -33,7 +33,7 @@
       "conditions": [
         ['OS!="win"', {
           'cflags_cc+': [
-            '-std=c++17'
+            '-std=c++20'
           ]
         }]
       ]
