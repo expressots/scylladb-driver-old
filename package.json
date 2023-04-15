@@ -15,7 +15,7 @@
   "license": "MIT",
   "scripts": {
     "start": "tsnd --respawn src/index.ts",
-    "run": "tsnd src/index.ts",
+    "run:native": "tsnd src/index.ts",
     "build": "docker compose run nodepp-example bash -c './scripts/build.sh --build'",
     "run:docker": "docker compose run nodepp-example bash -c 'start'",
     "gen:lib": "node-gyp rebuild",
