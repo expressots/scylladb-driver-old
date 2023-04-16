@@ -1,6 +1,6 @@
-# API Design
+<h1 align="center"> ScyllaDB Driver </h1>
 
-> Made by @ExpressoTS Team
+> The native ScyllaDB Driver wrapper made by @ExpressoTS Team for the Node.js community ❤🚀.
 
 # Getting Started
 
