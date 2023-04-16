@@ -16,6 +16,36 @@ namespace scylladb_wrapper::cluster {
     return session_object;
   }
 
+  Napi::Value Session::set_keyspace(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+
+    // Check if argument exists and is a string
+    if (info.Length() < 1 || !info[0].IsString()) {
+      Napi::TypeError::New(env, "String argument expected").ThrowAsJavaScriptException();
+      return env.Undefined();
+    }
+    std::string keyspace_name = info[0].ToString().Utf8Value();
+
+    // Check if session and cluster instances exist
+    if (!session || !cluster) {
+      Napi::TypeError::New(env, "Session and cluster instances must be created first")
+          .ThrowAsJavaScriptException();
+      return env.Null();
+    }
+
+    // Use cass_session_connect_keyspace function to set the session keyspace
+    CassError error = cass_session_connect_keyspace(session, cluster, keyspace_name.c_str());
+    if (error != CASS_OK) {
+      const char* message;
+      size_t message_length;
+      cass_error_desc(error, &message, &message_length);
+      Napi::TypeError::New(env, std::string(message, message_length)).ThrowAsJavaScriptException();
+      return env.Null();
+    }
+
+    return env.Null();
+  }
+
   Napi::Value Session::execute_sync(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();
     Napi::HandleScope scope(env);

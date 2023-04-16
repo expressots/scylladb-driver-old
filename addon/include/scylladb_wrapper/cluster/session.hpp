@@ -15,6 +15,7 @@ namespace scylladb_wrapper::cluster {
     Session(CassSession* session) : session(session) {}
 
     Napi::Value execute_sync(const Napi::CallbackInfo& info);
+    Napi::Value set_keyspace(const Napi::CallbackInfo& info);
 
     ~Session();
 
