@@ -1,5 +1,5 @@
 [project]
-name = "@nodepp/example"
+name = "scylladb-driver"
 
 [repositories]
 expressots = { git = "https://github.com/expressots/expressots-xmake-repo" }

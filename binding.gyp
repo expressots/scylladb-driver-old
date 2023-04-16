@@ -16,11 +16,12 @@
       "-fno-exceptions"
     ],
     "source_files": [ "<!@(find addon/src -name *.cpp)" ],
-    "dependencies_include_dirs": [ "<!@(./scripts/deps.sh --emit-include-dirs)" ],
+    "dependencies_include_dirs": [ "<!@(./scripts/deps.sh --emit-include-dirs)" ]
   },
   "targets": [
     {
       "target_name": "binding",
+      "type": "loadable_module",
       "cflags_cc!": [ "<@(compiler_checks)", "-std=c++20" ],
       "sources": [ "<@(source_files)" ],
       "include_dirs": [
@@ -29,13 +30,9 @@
         "<@(dependencies_include_dirs)",
         "/usr/local/include/"
       ],
-      "libraries": [ "<!@(./scripts/deps.sh --emit-libraries)" ],
+      "libraries": [ "<!@(./scripts/deps.sh --emit-libraries)", ],
       "conditions": [
-        ['OS!="win"', {
-          'cflags_cc+': [
-            '-std=c++20'
-          ]
-        }]
+        ['OS!="win"', { 'cflags_cc+': [ '-std=c++20' ] }],
       ]
     }
   ]

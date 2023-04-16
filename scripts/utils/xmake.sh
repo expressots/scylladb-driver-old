@@ -3,11 +3,11 @@ check_if_repository_exists() {
 }
 
 check_if_repositories_exists_and_add() {
-  REPOSITORIES="$1"
-  CONFIG_FILE="$2"
+	REPOSITORIES="$1"
+	CONFIG_FILE="$2"
 	for REPOSITORY in $REPOSITORIES; do
 		if ! check_if_repository_exists "$REPOSITORY"; then
-      xrepo add-repo -y "$REPOSITORY" "$(stoml "$CONFIG_FILE" repositories."$REPOSITORY".git)"
+			xrepo add-repo -y "$REPOSITORY" "$(stoml "$CONFIG_FILE" repositories."$REPOSITORY".git)"
 		fi
 	done
 }
@@ -17,7 +17,7 @@ check_if_dependency_exists() {
 }
 
 check_if_dependencies_exists_and_install() {
-  DEPENDENCIES="$1"
+	DEPENDENCIES="$1"
 	for DEPENDENCY in $DEPENDENCIES; do
 		if ! check_if_dependency_exists "$DEPENDENCY"; then
 			# TODO: Check how to install specific version
@@ -27,7 +27,7 @@ check_if_dependencies_exists_and_install() {
 }
 
 prompt_user_to_select() {
-  PACKAGES="$1"
+	PACKAGES="$1"
 
 	# Iterate over each line of packages
 	echo "$PACKAGES" | while read -r PACKAGE; do
@@ -56,4 +56,3 @@ prompt_user_to_select() {
 		xrepo install "$PACKAGE_NAME" "$PACKAGE_VERSION"
 	done
 }
-

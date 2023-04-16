@@ -4,5 +4,12 @@ compile_commands.json
 .cache/
 
 /node_modules/*
-/node_modules/@nodepp/example/binding.node
-!/node_modules/@nodepp/*
+/node_modules/scylladb-driver/binding.node
+!/node_modules/scylladb-driver/*
+
+./lib
+!./lib/index.js
+!./lib/index.d.ts
+!./lib/scripts/*
+
+prebuilds/

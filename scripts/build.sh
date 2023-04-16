@@ -99,6 +99,7 @@ if [ "$BUILD" = true ]; then
 
 	mkdir -p "./node_modules/$(stoml nodepp.config.toml project.name)"
 	cp ./build/Release/binding.node "./node_modules/$(stoml nodepp.config.toml project.name)/"
+  cp ./lib/index.d.ts "./node_modules/$(stoml nodepp.config.toml project.name)/"
 
 	patch_shared_libraries "./node_modules/$(stoml nodepp.config.toml project.name)/binding.node"
 fi
@@ -112,6 +113,49 @@ if [ "$LSP" = true ]; then
 fi
 
 if [ "$BUILD_RELEASE" = true ]; then
-	# TODO: On build release we should move the necessary files into the equivalent npm structure
-	log_error "Not implemented yet"
+	log_info "Building the addon for release"
+
+	if ! $PACKAGE_MANAGER prebuildify --napi &>/dev/null; then
+		log_error "Failed to bundle the addon"
+		exit 1
+	fi
+
+	OUTPUT_FOLDER="prebuilds"
+	DEPS_FOLDER="$OUTPUT_FOLDER/deps/"
+
+  mkdir -p "$DEPS_FOLDER"
+
+	# Get the libraries from emit
+	DEPENDENCIES=$(stoml "$CONFIG_FILE" dependencies)
+
+	for DEPENDENCY in $DEPENDENCIES; do
+		# Get the first letter of the dependency name
+		FIRST_LETTER=$(echo "$DEPENDENCY" | cut -c 1)
+		DEPENDENCY_LIST=$(ls "$HOME/.xmake/packages/$FIRST_LETTER/$DEPENDENCY")
+
+		# TODO: Later get the specified version, but for know get the first one
+		DEPENDENCY_VERSION=$(echo "$DEPENDENCY_LIST" | head -n 1)
+
+		DEPENDENCY_HASH=$(ls "$HOME/.xmake/packages/$FIRST_LETTER/$DEPENDENCY/$DEPENDENCY_VERSION")
+
+		LIB_DIR="$HOME/.xmake/packages/$FIRST_LETTER/$DEPENDENCY/$DEPENDENCY_VERSION/$DEPENDENCY_HASH/lib"
+
+		# Copy only .so files if there are any .so files
+		for file in "$LIB_DIR"/*.so; do
+			if [[ -e "$file" ]]; then # Check if the file exists
+        cp "$file" "$DEPS_FOLDER/"
+			fi
+		done
+	done
+
+	log_success "Addon bundled"
+
+	# Find every *.node file and patch it
+	# for file in "$OUTPUT_FOLDER"/**/*.node; do
+	# 	if [[ -e "$file" ]]; then # Check if the file exists
+	# 		patch_shared_libraries_on_release "$file" "$DEPS_FOLDER" 
+	# 	fi
+	# done
+
+  # patchelf --add-needed '$ORIGIN/../deps/libscylla-cpp-driver.so' "./prebuilds/linux-x64/node.napi.node"
 fi

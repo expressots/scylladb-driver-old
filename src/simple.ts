@@ -1,4 +1,4 @@
-import { Cluster } from "@nodepp/example";
+import { Cluster } from "scylladb-driver";
 
 const cluster = new Cluster({
   nodes: [process?.env.host ?? "127.0.0.1"],

@@ -10,6 +10,8 @@ namespace scylladb_wrapper::cluster {
     Napi::Env env = info.Env();
     Napi::Object session_object = Napi::Object::New(env);
 
+    // Freeze and seal it.
+
     session_object.Set(Napi::String::New(env, "executeSync"),
                        NodePP::MemberFunction(env, this, &Session::execute_sync));
 
@@ -122,7 +124,7 @@ namespace scylladb_wrapper::cluster {
             break;
           }
           default:
-            fmt::print("Unknown type: {}\n", type);
+            fmt::print("Unknown type: {}\n", static_cast<int>(type));
             break;
         }
       }
