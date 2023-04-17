@@ -12,6 +12,9 @@ namespace scylladb_wrapper::cluster {
 
     session_object.Set(Napi::String::New(env, "executeSync"),
                        NodePP::MemberFunction(env, this, &Session::execute_sync));
+    
+    session_object.Set(Napi::String::New(env, "setKeyspace"),
+                       NodePP::MemberFunction(env, this, &Session::set_keyspace));
 
     return session_object;
   }
