@@ -6,7 +6,7 @@
     "module": "commonjs",
     "rootDir": "./",
     "moduleResolution": "node",
-    "types": ["node"],
+    "types": ["node", "jest"],
     "resolveJsonModule": true,
     "allowJs": true,
     "checkJs": true,

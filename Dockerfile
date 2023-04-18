@@ -35,4 +35,6 @@ RUN ./scripts/deps.sh --install
 RUN yarn install --ignore-scripts
 
 # Build the project
-RUN ./scripts/build.sh --build
+# RUN ./scripts/build.sh --build
+
+ENTRYPOINT ["tail", "-f", "/dev/null"]

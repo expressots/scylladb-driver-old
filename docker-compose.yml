@@ -5,9 +5,9 @@ services:
     build: .
     volumes:
       - .:/home/nodepp/nodepp
-    command: bash -c "yarn run:native"
-
   # Scylla db
   scylladb:
     image: scylladb/scylla
     container_name: scylla-node
+    ports:
+      - "9042:9042"
