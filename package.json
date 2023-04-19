@@ -19,16 +19,18 @@
     "build": "docker compose run nodepp-example bash -c './scripts/build.sh --build'",
     "run:docker": "docker compose run nodepp-example bash -c 'start'",
     "gen:lib": "node-gyp rebuild",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "publish": "./scripts/publish.sh"
   },
   "dependencies": {
-    "@nodepp/example": "file:./node_modules/@nodepp/example",
+    "scylladb-driver": "file:./node_modules/scylladb-driver",
     "node-addon-api": "^6.0.0",
     "node-gyp": "^9.3.1",
-    "ts-node-dev": "^2.0.0"
+    "node-gyp-build": "^4.6.0"
   },
   "devDependencies": {
     "@types/node": "^18.15.11",
-    "typescript": "^5.0.3"
+    "typescript": "^5.0.3",
+    "prebuildify": "^5.0.1",
+    "ts-node-dev": "^2.0.0"
   }
 }

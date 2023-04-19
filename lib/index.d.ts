@@ -15,13 +15,13 @@ interface Session {
   executeSync<T = Record<string, string>>(query: string): Array<T>; // This string should be a row later
 }
 
-declare namespace NodeppExampleModule {
-  interface ExampleModule {
+declare namespace NodeppScyllaDBModule {
+  interface ScyllaDBModule {
     Cluster: typeof Cluster;
   }
 }
 
-declare module "@nodepp/example" {
-  const exampleModule: NodeppExampleModule.ExampleModule;
+declare module "scylladb-driver" {
+  const exampleModule: NodeppScyllaDBModule.ScyllaDBModule;
   export = exampleModule;
 }

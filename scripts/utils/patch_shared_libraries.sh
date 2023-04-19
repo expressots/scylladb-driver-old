@@ -37,3 +37,13 @@ patch_shared_libraries() {
 		done
 	done
 }
+
+patch_shared_libraries_on_release() {
+  ELF_FILE="$1"
+  DIR="$2"
+
+  # Patch the shared libraries from the DIR
+  find "$DIR" -maxdepth 1 -type f -exec file {} \; | grep "shared object" | cut -d: -f1 | while read -r SHARED_LIB; do
+    patchelf --add-needed "$SHARED_LIB" "$ELF_FILE"
+  done
+}
