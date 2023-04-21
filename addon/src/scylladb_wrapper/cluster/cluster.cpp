@@ -166,7 +166,7 @@ namespace scylladb_wrapper::cluster {
       return env.Null();
     }
 
-    Session *sessionWrapper = new Session(this->session);
+    Session *sessionWrapper = new Session(this->session, this->cluster);
     return sessionWrapper->GetClass(info);
   }
 }  // namespace scylladb_wrapper::cluster

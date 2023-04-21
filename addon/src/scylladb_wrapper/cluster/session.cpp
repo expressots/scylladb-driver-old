@@ -39,11 +39,12 @@ namespace scylladb_wrapper::cluster {
     }
 
     // Use cass_session_connect_keyspace function to set the session keyspace
-    CassError error = cass_session_connect_keyspace(session, cluster, keyspace_name.c_str());
+    CassFuture* rc = cass_session_connect_keyspace(session, cluster, keyspace_name.c_str());
+    auto error = cass_future_error_code(rc);
     if (error != CASS_OK) {
       const char* message;
       size_t message_length;
-      cass_error_desc(error, &message, &message_length);
+      cass_future_error_message(rc, &message, &message_length);
       Napi::TypeError::New(env, std::string(message, message_length)).ThrowAsJavaScriptException();
       return env.Null();
     }
