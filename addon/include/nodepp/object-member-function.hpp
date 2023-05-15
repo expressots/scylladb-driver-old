@@ -10,4 +10,10 @@ namespace NodePP {
     return Napi::Function::New(
         env, [=](const Napi::CallbackInfo &info) { return (instance->*function)(info); });
   }
+
+  template <typename ClassType, typename FunctionType>
+  Napi::Function StaticMemberFunction(Napi::Env env, ClassType *instance, FunctionType function) {
+    return Napi::Function::New(
+        env, [=](const Napi::CallbackInfo &info) { return (ClassType::function)(info); });
+  }
 }  // namespace NodePP

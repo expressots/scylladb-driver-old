@@ -32,7 +32,12 @@
       ],
       "libraries": [ "<!@(./scripts/deps.sh --emit-libraries)", ],
       "conditions": [
-        ['OS!="win"', { 'cflags_cc+': [ '-std=c++20' ] }],
+        [
+          'OS!="win"', 
+          { 
+            'cflags_cc+': [ '-std=c++20' ] 
+          }
+        ],
       ]
     }
   ]
