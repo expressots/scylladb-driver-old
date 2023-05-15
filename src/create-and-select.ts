@@ -1,4 +1,4 @@
-import { Cluster } from "scylladb-driver";
+import { Cluster, UUIDv4 } from "scylladb-driver";
 
 const cluster = new Cluster({
   nodes: [process?.env.host ?? "127.0.0.1"],
@@ -60,6 +60,7 @@ export function run() {
 
   [
     {
+      id: UUIDv4.random(),
       name: "John",
       age: 30,
       email: "john@doe.com",
